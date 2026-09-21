@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sn/flash_geometry.h"
 #include "sn/flash_if.h"
 
 #ifdef __cplusplus
@@ -32,15 +33,6 @@ void sn_flash_sim_init(sn_flash_sim_t *sim);
 
 /** @brief Driver interface bound to @p sim. */
 sn_flash_if_t sn_flash_sim_if(sn_flash_sim_t *sim);
-
-/** @brief Map a CPU address to the sector index (-1 when outside flash). */
-int sn_flash_sector_of(uint32_t addr);
-
-/** @brief Base address of sector @p index. */
-uint32_t sn_flash_sector_base(int index);
-
-/** @brief Size of sector @p index. */
-uint32_t sn_flash_sector_size(int index);
 
 #ifdef __cplusplus
 }

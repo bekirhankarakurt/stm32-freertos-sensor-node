@@ -8,40 +8,6 @@
 
 #include "sn/flash_layout.h"
 
-#define SECTOR_COUNT 8
-
-static const uint32_t k_sector_size[SECTOR_COUNT] = {0x4000U,  0x4000U,  0x4000U,  0x4000U,
-                                                     0x10000U, 0x20000U, 0x20000U, 0x20000U};
-
-uint32_t sn_flash_sector_size(int index)
-{
-    return ((index >= 0) && (index < SECTOR_COUNT)) ? k_sector_size[index] : 0U;
-}
-
-uint32_t sn_flash_sector_base(int index)
-{
-    uint32_t base = SN_FLASH_BASE;
-    for (int i = 0; (i < index) && (i < SECTOR_COUNT); ++i) {
-        base += k_sector_size[i];
-    }
-    return base;
-}
-
-int sn_flash_sector_of(uint32_t addr)
-{
-    if (addr < SN_FLASH_BASE) {
-        return -1;
-    }
-    uint32_t base = SN_FLASH_BASE;
-    for (int i = 0; i < SECTOR_COUNT; ++i) {
-        if (addr < (base + k_sector_size[i])) {
-            return i;
-        }
-        base += k_sector_size[i];
-    }
-    return -1;
-}
-
 static bool in_range(uint32_t addr, size_t len)
 {
     return (addr >= SN_FLASH_BASE) && (len <= SN_FLASH_SIM_SIZE) &&
