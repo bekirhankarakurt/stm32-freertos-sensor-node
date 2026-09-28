@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  firmware:
+    name: Firmware (arm-none-eabi-gcc)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gcc-arm-none-eabi libnewlib-arm-none-eabi ninja-build
+      - name: Configure
+        run: cmake --preset firmware
+      - name: Build
+        run: cmake --build --preset firmware
+      - name: Size report
+        run: |
+          {
+            echo '### Firmware size'
+            echo '```'
+            arm-none-eabi-size -B build/firmware/firmware/*.elf
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          arm-none-eabi-size -B build/firmware/firmware/*.elf
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firmware
+          path: |
+            build/firmware/firmware/*.elf
+            build/firmware/firmware/*.bin
+            build/firmware/firmware/*.hex
+            build/firmware/firmware/*.map
+
+  host-tests:
+    name: Host tests (${{ matrix.compiler }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - compiler: gcc
+            cc: gcc
+            cxx: g++
+          - compiler: clang
+            cc: clang
+            cxx: clang++
+    env:
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Ninja
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ninja-build
+      - run: cmake --preset host
+      - run: cmake --build --preset host
+      - run: ctest --preset host
+
+  sanitizers:
+    name: Host tests (ASan + UBSan)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Ninja
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ninja-build
+      - run: cmake --preset host-asan
+      - run: cmake --build --preset host-asan
+      - run: ctest --preset host-asan
+
+  emulation:
+    name: QEMU boot test
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain and QEMU
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gcc-arm-none-eabi libnewlib-arm-none-eabi qemu-system-arm ninja-build
+      - name: Build firmware and decoder
+        run: |
+          cmake --preset firmware && cmake --build --preset firmware
+          cmake --preset host -DSN_BUILD_TESTS=OFF -DSN_BUILD_SIM=OFF && cmake --build --preset host
+      - name: Boot bootloader + application and decode UART
+        run: |
+          scripts/qemu_run.sh 8 | tee qemu.log
+          grep -q '^BOOT  v' qemu.log
+          test "$(grep -c '^TELEM' qemu.log)" -ge 10
+          grep -q '^HEALTH' qemu.log

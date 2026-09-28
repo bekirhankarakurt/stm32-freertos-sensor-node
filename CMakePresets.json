@@ -1,0 +1,46 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 21, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "host",
+      "displayName": "Host: tests, simulation, tools",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/host",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug", "SN_WERROR": "ON" }
+    },
+    {
+      "name": "host-asan",
+      "inherits": "host",
+      "displayName": "Host with AddressSanitizer + UBSan",
+      "binaryDir": "${sourceDir}/build/host-asan",
+      "cacheVariables": { "SN_SANITIZE": "address,undefined" }
+    },
+    {
+      "name": "host-coverage",
+      "inherits": "host",
+      "displayName": "Host with gcov instrumentation",
+      "binaryDir": "${sourceDir}/build/host-coverage",
+      "cacheVariables": { "SN_COVERAGE": "ON" }
+    },
+    {
+      "name": "firmware",
+      "displayName": "STM32F401RE firmware (arm-none-eabi)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/firmware",
+      "toolchainFile": "${sourceDir}/cmake/arm-none-eabi.cmake",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "MinSizeRel", "SN_WERROR": "ON" }
+    }
+  ],
+  "buildPresets": [
+    { "name": "host", "configurePreset": "host" },
+    { "name": "host-asan", "configurePreset": "host-asan" },
+    { "name": "host-coverage", "configurePreset": "host-coverage" },
+    { "name": "firmware", "configurePreset": "firmware" }
+  ],
+  "testPresets": [
+    { "name": "host", "configurePreset": "host", "output": { "outputOnFailure": true } },
+    { "name": "host-asan", "configurePreset": "host-asan", "output": { "outputOnFailure": true } },
+    { "name": "host-coverage", "configurePreset": "host-coverage", "output": { "outputOnFailure": true } }
+  ]
+}
