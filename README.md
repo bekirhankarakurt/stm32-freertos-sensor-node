@@ -13,7 +13,7 @@
 - **Deterministic RTOS design.** Five statically allocated FreeRTOS tasks (no heap, ever): fixed-rate sampling → median/EMA filtering + window statistics → telemetry, plus command handling and a task-aware watchdog.
 - **Robust link.** Every message is `payload ‖ CRC-16` → COBS → `0x00`; one decoder serves telemetry, commands and firmware updates. Host decoder and uploader in C++17 share the exact same codec.
 - **Fail-safe updates.** A/B slots with CRC-32 image headers, power-cut-tolerant boot journal, three trial boots and automatic rollback; updates over UART with retries and idempotent writes.
-- **Testable without hardware.** The whole application runs on Linux (FreeRTOS POSIX port, simulated BME280) and the real firmware boots in QEMU; 57 unit tests plus end-to-end checks run under GCC, Clang and ASan/UBSan in CI.
+- **Testable without hardware.** The whole application runs on Linux (FreeRTOS POSIX port, simulated BME280) and the real firmware boots in QEMU; 58 unit tests plus end-to-end checks run under GCC, Clang and ASan/UBSan in CI.
 
 ## Demo
 
