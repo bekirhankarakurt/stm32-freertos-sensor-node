@@ -16,7 +16,9 @@ class Transport {
 public:
     Transport() = default;
     Transport(const Transport&) = delete;
+    Transport(Transport&&) = delete;
     Transport& operator=(const Transport&) = delete;
+    Transport& operator=(Transport&&) = delete;
     virtual ~Transport() = default;
 
     /** Send one payload. */

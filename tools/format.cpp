@@ -14,9 +14,10 @@
 namespace sn::tools {
 namespace {
 
-std::string printf_string(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
+/* printf-style on purpose: the format attribute lets -Wformat check every call. */
+std::string printf_string(const char* fmt, ...) __attribute__((format(printf, 1, 2)));  // NOLINT(cert-dcl50-cpp)
 
-std::string printf_string(const char* fmt, ...)
+std::string printf_string(const char* fmt, ...)  // NOLINT(cert-dcl50-cpp)
 {
     char buf[256];
     va_list args;

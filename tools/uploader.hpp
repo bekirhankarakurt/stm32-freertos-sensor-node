@@ -61,7 +61,7 @@ private:
     bool transact(const std::vector<std::uint8_t>& req, std::uint8_t expect_type, std::vector<std::uint8_t>& resp);
     bool command(std::uint8_t type, const std::vector<std::uint8_t>& body, std::uint32_t& arg);
 
-    Transport& link_;
+    Transport* link_;
     int timeout_ms_;
     int retries_;
     std::uint8_t seq_{0U};

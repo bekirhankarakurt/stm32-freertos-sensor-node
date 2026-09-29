@@ -27,7 +27,9 @@ public:
 protected:
     NodeControl() = default;
     NodeControl(const NodeControl&) = default;
+    NodeControl(NodeControl&&) = default;
     NodeControl& operator=(const NodeControl&) = default;
+    NodeControl& operator=(NodeControl&&) = default;
     ~NodeControl() = default;
 };
 

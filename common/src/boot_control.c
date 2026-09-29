@@ -140,21 +140,19 @@ sn_boot_decision_t sn_boot_decide(const sn_boot_state_t *state, bool valid_a, bo
     d.boot_slot = SN_SLOT_NONE;
     const bool valid[2] = {valid_a, valid_b};
 
-    if (!slot_is_valid_index(d.state.pending)) {
-        d.state.pending = SN_SLOT_NONE;
-        d.state.attempts = 0U;
-    } else if (!valid[d.state.pending]) {
-        d.state.pending = SN_SLOT_NONE;
-        d.state.attempts = 0U;
-        d.state.flags |= SN_BOOT_FLAG_ROLLED_BACK;
-    } else if (d.state.attempts < SN_BOOT_MAX_ATTEMPTS) {
+    const bool has_pending = slot_is_valid_index(d.state.pending);
+    if (has_pending && valid[d.state.pending] && (d.state.attempts < SN_BOOT_MAX_ATTEMPTS)) {
+        /* Another trial boot of the freshly installed image. */
         d.state.attempts = (uint8_t)(d.state.attempts + 1U);
         d.state.flags = (uint8_t)(d.state.flags & (uint8_t)~SN_BOOT_FLAG_ROLLED_BACK);
         d.boot_slot = d.state.pending;
     } else {
+        /* No (usable) trial: an invalid or exhausted pending image is a rollback. */
+        if (has_pending) {
+            d.state.flags |= SN_BOOT_FLAG_ROLLED_BACK;
+        }
         d.state.pending = SN_SLOT_NONE;
         d.state.attempts = 0U;
-        d.state.flags |= SN_BOOT_FLAG_ROLLED_BACK;
     }
 
     if (d.boot_slot == SN_SLOT_NONE) {

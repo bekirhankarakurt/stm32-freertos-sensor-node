@@ -6,9 +6,8 @@
  * The binary telemetry stream goes to stdout (or --output); pipe it into
  * sn_decode. Commands are read from --input (e.g. a FIFO written by sn_decode).
  */
-#define _POSIX_C_SOURCE 200809L
-
 #include <fcntl.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,28 +40,27 @@ static int parse_u32(const char *text, uint32_t *out)
 int main(int argc, char **argv)
 {
     sn_sim_options_t opt = {STDOUT_FILENO, -1, 0U, 1U};
-    for (int i = 1; i < argc; ++i) {
+    /* Every option takes exactly one value. */
+    for (int i = 1; i < argc; i += 2) {
         const char *arg = argv[i];
         const char *val = (i + 1 < argc) ? argv[i + 1] : NULL;
-        if ((strcmp(arg, "--duration-ms") == 0) && (val != NULL) && (parse_u32(val, &opt.duration_ms) == 0)) {
-            ++i;
-        } else if ((strcmp(arg, "--seed") == 0) && (val != NULL) && (parse_u32(val, &opt.seed) == 0)) {
-            ++i;
-        } else if ((strcmp(arg, "--input") == 0) && (val != NULL)) {
+        bool ok = (val != NULL);
+        if (!ok) {
+            /* Missing value: reported below. */
+        } else if (strcmp(arg, "--duration-ms") == 0) {
+            ok = parse_u32(val, &opt.duration_ms) == 0;
+        } else if (strcmp(arg, "--seed") == 0) {
+            ok = parse_u32(val, &opt.seed) == 0;
+        } else if (strcmp(arg, "--input") == 0) {
             opt.in_fd = open(val, O_RDONLY | O_NONBLOCK);
-            if (opt.in_fd < 0) {
-                perror(val);
-                return EXIT_FAILURE;
-            }
-            ++i;
-        } else if ((strcmp(arg, "--output") == 0) && (val != NULL)) {
+            ok = opt.in_fd >= 0;
+        } else if (strcmp(arg, "--output") == 0) {
             opt.out_fd = open(val, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-            if (opt.out_fd < 0) {
-                perror(val);
-                return EXIT_FAILURE;
-            }
-            ++i;
+            ok = opt.out_fd >= 0;
         } else {
+            ok = false;
+        }
+        if (!ok) {
             usage(argv[0]);
             return EXIT_FAILURE;
         }

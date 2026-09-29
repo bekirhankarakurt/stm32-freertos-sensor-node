@@ -12,9 +12,6 @@ extern "C" {
 /** @brief Create all tasks and start the scheduler; does not return unless the scheduler fails. */
 void sn_node_run(void);
 
-/** @brief configASSERT() failure handler, provided by each platform. */
-void sn_rtos_assert_failed(const char *file, int line);
-
 #ifdef __cplusplus
 }
 #endif

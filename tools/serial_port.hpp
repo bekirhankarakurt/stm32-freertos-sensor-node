@@ -23,6 +23,10 @@ public:
      * @param baud    Baud rate for TTYs.
      */
     SerialPort(const std::string& rx_path, const std::string& tx_path, unsigned baud);
+    SerialPort(const SerialPort&) = delete;
+    SerialPort(SerialPort&&) = delete;
+    SerialPort& operator=(const SerialPort&) = delete;
+    SerialPort& operator=(SerialPort&&) = delete;
     ~SerialPort() override;
 
     /** True when the port opened successfully. */
