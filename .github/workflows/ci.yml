@@ -18,9 +18,9 @@ jobs:
     name: Firmware (arm-none-eabi-gcc)
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install toolchain
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gcc-arm-none-eabi libnewlib-arm-none-eabi ninja-build
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib ninja-build
       - name: Configure
         run: cmake --preset firmware
       - name: Build
@@ -34,7 +34,7 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
           arm-none-eabi-size -B build/firmware/firmware/*.elf
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: firmware
           path: |
@@ -60,7 +60,7 @@ jobs:
       CC: ${{ matrix.cc }}
       CXX: ${{ matrix.cxx }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install Ninja
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ninja-build
       - run: cmake --preset host
@@ -71,7 +71,7 @@ jobs:
     name: Host tests (ASan + UBSan)
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install Ninja
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ninja-build
       - run: cmake --preset host-asan
@@ -82,9 +82,9 @@ jobs:
     name: QEMU boot test
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install toolchain and QEMU
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gcc-arm-none-eabi libnewlib-arm-none-eabi qemu-system-arm ninja-build
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib qemu-system-arm ninja-build
       - name: Build firmware and decoder
         run: |
           cmake --preset firmware && cmake --build --preset firmware
