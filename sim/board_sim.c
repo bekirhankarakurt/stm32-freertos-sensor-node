@@ -2,8 +2,6 @@
  * @file board_sim.c
  * @brief board.h implementation for Linux: stdio UART, simulated BME280, RAM flash.
  */
-#define _POSIX_C_SOURCE 200809L
-
 #include "board_sim.h"
 
 #include <errno.h>
@@ -158,6 +156,6 @@ void board_sim_idle(void)
         _exit(SN_SIM_EXIT_WATCHDOG);
     }
     if ((g_opt.duration_ms != 0U) && (now_ms >= g_opt.duration_ms)) {
-        _exit(EXIT_SUCCESS);
+        exit(EXIT_SUCCESS); /* runs atexit handlers, e.g. coverage dumps */
     }
 }
