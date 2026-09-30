@@ -1,5 +1,7 @@
 # stm32-freertos-sensor-node
 
+![Bootloader and FreeRTOS application booting in QEMU with live decoded telemetry](docs/demo.gif)
+
 **Production-style STM32F401RE sensor node: register-level drivers, FreeRTOS pipeline, CRC-framed telemetry and a fail-safe A/B bootloader — fully testable on a PC.**
 
 [![CI](https://github.com/bekirhankarakurt/stm32-freertos-sensor-node/actions/workflows/ci.yml/badge.svg)](https://github.com/bekirhankarakurt/stm32-freertos-sensor-node/actions/workflows/ci.yml)
