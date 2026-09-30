@@ -1,0 +1,46 @@
+name: Bug report
+description: Report a defect in the firmware, bootloader, simulation or host tools
+labels: [bug]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: A clear description of the problem and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Build with `cmake --preset firmware`
+        2. Flash `sn_full_a.bin`
+        3. Run `sn_decode --port /dev/ttyACM0`
+    validations:
+      required: true
+  - type: dropdown
+    id: target
+    attributes:
+      label: Where does it happen?
+      options:
+        - Nucleo-F401RE hardware
+        - QEMU
+        - Linux simulation (sn_sim)
+        - Host tools (sn_decode / sn_upload / imgtool.py)
+        - Build / CI
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: v1.0.0 or git hash from the BOOT line
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Decoded UART output, build log or test output.
+      render: text
