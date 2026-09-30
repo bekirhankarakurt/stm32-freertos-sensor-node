@@ -3,9 +3,14 @@
 **Production-style STM32F401RE sensor node: register-level drivers, FreeRTOS pipeline, CRC-framed telemetry and a fail-safe A/B bootloader — fully testable on a PC.**
 
 [![CI](https://github.com/bekirhankarakurt/stm32-freertos-sensor-node/actions/workflows/ci.yml/badge.svg)](https://github.com/bekirhankarakurt/stm32-freertos-sensor-node/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/bekirhankarakurt/stm32-freertos-sensor-node/actions/workflows/codeql.yml/badge.svg)](https://github.com/bekirhankarakurt/stm32-freertos-sensor-node/actions/workflows/codeql.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fbekirhankarakurt.github.io%2Fstm32-freertos-sensor-node%2Fcoverage%2Fbadge.json)](https://bekirhankarakurt.github.io/stm32-freertos-sensor-node/coverage/)
+[![Release](https://img.shields.io/github/v/release/bekirhankarakurt/stm32-freertos-sensor-node)](https://github.com/bekirhankarakurt/stm32-freertos-sensor-node/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![C11 / C++17](https://img.shields.io/badge/C11%20%2F%20C%2B%2B17-00599C?logo=c%2B%2B&logoColor=white)
 ![Platform](https://img.shields.io/badge/platform-STM32F401RE%20%7C%20QEMU%20%7C%20Linux-03234B)
+
+**[Documentation](https://bekirhankarakurt.github.io/stm32-freertos-sensor-node/)** — API reference (Doxygen) and coverage report · **[Releases](https://github.com/bekirhankarakurt/stm32-freertos-sensor-node/releases)** — prebuilt `.elf/.bin/.hex` for bootloader and slots A/B
 
 ## Why / what
 
@@ -219,7 +224,11 @@ Wire format: `COBS( type | seq | body | CRC-16/CCITT-FALSE LE ) 0x00`, all field
 cmake --preset host-asan && cmake --build --preset host-asan && ctest --preset host-asan
 ```
 
-CI runs the firmware build with a size report, the host tests with GCC and Clang, the ASan/UBSan job and a QEMU boot test.
+CI runs the firmware build with a size report, host tests with GCC and Clang, ASan/UBSan, a QEMU boot test, clang-tidy (bugprone, cert, cppcoreguidelines, readability) and cppcheck as hard gates, a MISRA C:2012 addon report, CodeQL and gcovr coverage published to [GitHub Pages](https://bekirhankarakurt.github.io/stm32-freertos-sensor-node/coverage/).
+
+```bash
+scripts/static_analysis.sh build/host build/firmware
+```
 
 ## Troubleshooting / FAQ
 
@@ -242,7 +251,8 @@ firmware/       target build: drivers/ (register level), board/ (Nucleo, QEMU), 
 sim/            Linux board + FreeRTOS POSIX configuration (sn_sim)
 tools/          sn_decode, sn_upload (C++17), imgtool.py (sign/merge/info)
 tests/          dependency-free unit tests and the simulation end-to-end test
-scripts/        qemu_run.sh
+scripts/        qemu_run.sh, static_analysis.sh, coverage_badge.py
+docs/           Doxyfile, Pages landing page, demo.tape (VHS) and demo.gif
 cmake/          toolchain file, warnings, dependencies, version stamping
 ```
 
