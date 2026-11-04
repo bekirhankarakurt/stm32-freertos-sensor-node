@@ -1,0 +1,44 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish firmware
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install toolchain
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib ninja-build
+      - name: Build firmware
+        run: cmake --preset firmware && cmake --build --preset firmware
+      - name: Collect assets
+        run: |
+          mkdir -p dist
+          cd build/firmware/firmware
+          for t in sn_bootloader sn_app_a sn_app_b; do
+            cp "$t.elf" "$t.bin" "$t.hex" "$t.map" ../../../dist/
+          done
+          cp sn_full_a.bin ../../../dist/
+          cd ../../../dist
+          for img in sn_app_a.bin sn_app_b.bin; do python3 ../tools/imgtool.py info "$img"; done
+          sha256sum * > SHA256SUMS
+          cat SHA256SUMS
+      - name: Extract release notes
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="$version" '
+            $0 ~ "^## \\[" v "\\]" { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > notes.md
+          test -s notes.md
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --notes-file notes.md --verify-tag
