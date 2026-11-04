@@ -17,7 +17,10 @@ std::int16_t clamp_i16(std::int32_t v)
 {
     constexpr std::int32_t lo = std::numeric_limits<std::int16_t>::min();
     constexpr std::int32_t hi = std::numeric_limits<std::int16_t>::max();
-    return static_cast<std::int16_t>((v < lo) ? lo : ((v > hi) ? hi : v));
+    if (v < lo) {
+        return static_cast<std::int16_t>(lo);
+    }
+    return static_cast<std::int16_t>((v > hi) ? hi : v);
 }
 
 std::uint16_t clamp_u16(std::uint32_t v)

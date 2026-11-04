@@ -9,7 +9,8 @@ static uint32_t load_acquire(const uint32_t *p)
     return __atomic_load_n(p, __ATOMIC_ACQUIRE);
 }
 
-static void store_release(uint32_t *p, uint32_t v)
+/* The atomic builtin writes through p, which clang-tidy does not see. */
+static void store_release(uint32_t *p, uint32_t v) /* NOLINT(readability-non-const-parameter) */
 {
     __atomic_store_n(p, v, __ATOMIC_RELEASE);
 }

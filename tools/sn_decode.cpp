@@ -46,25 +46,32 @@ int main(int argc, char** argv)
 
     for (int i = 1; i < argc; ++i) {
         const std::string arg = argv[i];
-        const char* val = (i + 1 < argc) ? argv[i + 1] : nullptr;
-        if ((arg == "--port") && (val != nullptr)) {
-            port = val;
-            ++i;
-        } else if ((arg == "--tx") && (val != nullptr)) {
-            tx = val;
-            ++i;
-        } else if ((arg == "--baud") && (val != nullptr) && parse_long(val, baud)) {
-            ++i;
-        } else if ((arg == "--count") && (val != nullptr) && parse_long(val, count)) {
-            ++i;
-        } else if ((arg == "--timeout-ms") && (val != nullptr) && parse_long(val, timeout_ms)) {
-            ++i;
-        } else if ((arg == "--send") && (val != nullptr)) {
-            sends.emplace_back(val);
-            ++i;
-        } else if (arg == "--csv") {
+        if (arg == "--csv") {
             csv = true;
+            continue;
+        }
+        /* All other options take one value. */
+        const char* val = (i + 1 < argc) ? argv[i + 1] : nullptr;
+        ++i;
+        bool ok = (val != nullptr);
+        if (!ok) {
+            /* Missing value: reported below. */
+        } else if (arg == "--port") {
+            port = val;
+        } else if (arg == "--tx") {
+            tx = val;
+        } else if (arg == "--baud") {
+            ok = parse_long(val, baud);
+        } else if (arg == "--count") {
+            ok = parse_long(val, count);
+        } else if (arg == "--timeout-ms") {
+            ok = parse_long(val, timeout_ms);
+        } else if (arg == "--send") {
+            sends.emplace_back(val);
         } else {
+            ok = false;
+        }
+        if (!ok) {
             usage();
             return EXIT_FAILURE;
         }

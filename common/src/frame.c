@@ -38,7 +38,7 @@ void sn_frame_decoder_init(sn_frame_decoder_t *dec)
     dec->overflow = false;
 }
 
-static sn_frame_status_t finish_block(sn_frame_decoder_t *dec, uint8_t *payload, size_t cap,
+static sn_frame_status_t finish_block(const sn_frame_decoder_t *dec, uint8_t *payload, size_t cap,
                                       size_t *payload_len)
 {
     uint8_t raw[SN_FRAME_MAX_PAYLOAD + SN_FRAME_CRC_SIZE];

@@ -4,6 +4,8 @@
  */
 #include "sn/health.hpp"
 
+#include <algorithm>
+
 namespace sn {
 
 HealthMonitor::HealthMonitor(std::uint32_t deadline_ms, std::uint32_t confirm_after_ms)
@@ -24,13 +26,10 @@ void HealthMonitor::checkin(TaskId id, std::uint32_t now_ms)
 
 bool HealthMonitor::all_alive(std::uint32_t now_ms) const
 {
-    for (const auto& slot : last_) {
-        /* Unsigned subtraction handles tick wrap-around. */
-        if ((now_ms - slot.load(std::memory_order_acquire)) > deadline_ms_) {
-            return false;
-        }
-    }
-    return true;
+    /* Unsigned subtraction handles tick wrap-around. */
+    return std::all_of(last_.begin(), last_.end(), [this, now_ms](const std::atomic<std::uint32_t>& slot) {
+        return (now_ms - slot.load(std::memory_order_acquire)) <= deadline_ms_;
+    });
 }
 
 HealthVerdict HealthMonitor::evaluate(std::uint32_t now_ms)

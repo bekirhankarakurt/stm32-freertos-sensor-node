@@ -14,6 +14,8 @@ static bool in_range(uint32_t addr, size_t len)
            ((addr - SN_FLASH_BASE) <= (SN_FLASH_SIM_SIZE - len));
 }
 
+/* Signature fixed by sn_flash_if_t. */
+// cppcheck-suppress constParameterCallback
 static bool sim_read(void *ctx, uint32_t addr, uint8_t *dst, size_t len)
 {
     const sn_flash_sim_t *sim = (const sn_flash_sim_t *)ctx;

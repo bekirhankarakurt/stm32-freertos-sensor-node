@@ -12,7 +12,7 @@
 namespace sn::tools {
 
 Uploader::Uploader(Transport& link, int timeout_ms, int retries)
-    : link_(link), timeout_ms_(timeout_ms), retries_(retries)
+    : link_(&link), timeout_ms_(timeout_ms), retries_(retries)
 {
 }
 
@@ -20,11 +20,11 @@ bool Uploader::transact(const std::vector<std::uint8_t>& req, std::uint8_t expec
                         std::vector<std::uint8_t>& resp)
 {
     for (int attempt = 0; attempt < retries_; ++attempt) {
-        if (!link_.send(req)) {
+        if (!link_->send(req)) {
             error_ = "transport send failed";
             return false;
         }
-        while (link_.receive(resp, timeout_ms_)) {
+        while (link_->receive(resp, timeout_ms_)) {
             /* Ignore stale replies and stray application telemetry. */
             if ((resp.size() >= 2U) && (resp[0] == expect_type) && (resp[1] == req[1])) {
                 return true;
@@ -58,7 +58,7 @@ bool Uploader::command(std::uint8_t type, const std::vector<std::uint8_t>& body,
 
 bool Uploader::request_bootloader()
 {
-    return link_.send({SN_MSG_CMD_BOOTLOADER, seq_++});
+    return link_->send({SN_MSG_CMD_BOOTLOADER, seq_++});
 }
 
 bool Uploader::hello(BootloaderInfo& info, int wait_ms)
@@ -66,12 +66,12 @@ bool Uploader::hello(BootloaderInfo& info, int wait_ms)
     int waited = 0;
     while (waited <= wait_ms) {
         const std::vector<std::uint8_t> req{SN_MSG_UPD_HELLO, seq_++};
-        if (!link_.send(req)) {
+        if (!link_->send(req)) {
             error_ = "transport send failed";
             return false;
         }
         std::vector<std::uint8_t> resp;
-        while (link_.receive(resp, timeout_ms_)) {
+        while (link_->receive(resp, timeout_ms_)) {
             if ((resp.size() == 20U) && (resp[0] == SN_MSG_UPD_INFO) && (resp[1] == req[1])) {
                 info.protocol = resp[2];
                 info.bl_major = resp[3];

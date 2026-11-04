@@ -300,33 +300,29 @@ std::uint16_t min_stack_headroom()
     return sat16(static_cast<std::uint32_t>(min));
 }
 
-/** CPU load in permille from idle-task run time since the previous sample. */
-class CpuLoadMeter {
-public:
+/** CPU load in permille from idle-task run time since the previous call. */
 #if (configGENERATE_RUN_TIME_STATS == 1)
-    CpuLoadMeter() : idle_prev_(ulTaskGetIdleRunTimeCounter()), total_prev_(portGET_RUN_TIME_COUNTER_VALUE()) {}
-
-    std::uint16_t sample()
-    {
-        const std::uint32_t idle = ulTaskGetIdleRunTimeCounter();
-        const std::uint32_t total = portGET_RUN_TIME_COUNTER_VALUE();
-        const std::uint32_t d_total = total - total_prev_;
-        const std::uint32_t d_idle = idle - idle_prev_;
-        idle_prev_ = idle;
-        total_prev_ = total;
-        if ((d_total == 0U) || (d_idle > d_total)) {
-            return 0U;
-        }
-        return sat16(static_cast<std::uint32_t>((static_cast<std::uint64_t>(d_total - d_idle) * 1000U) / d_total));
+std::uint16_t cpu_load_permille()
+{
+    static std::uint32_t idle_prev = 0U;
+    static std::uint32_t total_prev = 0U;
+    const std::uint32_t idle = ulTaskGetIdleRunTimeCounter();
+    const std::uint32_t total = portGET_RUN_TIME_COUNTER_VALUE();
+    const std::uint32_t d_total = total - total_prev;
+    const std::uint32_t d_idle = idle - idle_prev;
+    idle_prev = idle;
+    total_prev = total;
+    if ((d_total == 0U) || (d_idle > d_total)) {
+        return 0U;
     }
-
-private:
-    std::uint32_t idle_prev_;
-    std::uint32_t total_prev_;
+    return sat16(static_cast<std::uint32_t>((static_cast<std::uint64_t>(d_total - d_idle) * 1000U) / d_total));
+}
 #else
-    std::uint16_t sample() const { return sn::proto::kCpuLoadUnavailable; }
+std::uint16_t cpu_load_permille()
+{
+    return sn::proto::kCpuLoadUnavailable;
+}
 #endif
-};
 
 void send_boot_announcement()
 {
@@ -358,7 +354,7 @@ void health_task(void* arg)
 
     TickType_t last_wake = xTaskGetTickCount();
     std::uint32_t last_report = now_ms();
-    CpuLoadMeter cpu;
+    (void)cpu_load_permille();
     bool led = false;
 
     for (;;) {
@@ -376,7 +372,7 @@ void health_task(void* arg)
         if ((now - last_report) >= kHealthReportMs) {
             last_report = now;
             const sn::proto::Health h{now,
-                                      cpu.sample(),
+                                      cpu_load_permille(),
                                       min_stack_headroom(),
                                       static_cast<sn::proto::ResetCause>(board_reset_cause()),
                                       g_boot_state.flags,
@@ -431,16 +427,19 @@ extern "C" void sn_node_run(void)
 }
 
 /* ---- Static memory for kernel-owned tasks. ---- */
-extern "C" void vApplicationGetIdleTaskMemory(StaticTask_t** tcb, StackType_t** stack, configSTACK_DEPTH_TYPE* words)
+extern "C" void vApplicationGetIdleTaskMemory(StaticTask_t** ppxIdleTaskTCBBuffer,
+                                              StackType_t** ppxIdleTaskStackBuffer,
+                                              configSTACK_DEPTH_TYPE* puxIdleTaskStackSize)
 {
     static StaticTask_t idle_tcb;
     static std::array<StackType_t, configMINIMAL_STACK_SIZE> idle_stack;
-    *tcb = &idle_tcb;
-    *stack = idle_stack.data();
-    *words = configMINIMAL_STACK_SIZE;
+    *ppxIdleTaskTCBBuffer = &idle_tcb;
+    *ppxIdleTaskStackBuffer = idle_stack.data();
+    *puxIdleTaskStackSize = configMINIMAL_STACK_SIZE;
 }
 
-extern "C" void vApplicationStackOverflowHook(TaskHandle_t task, char* name)
+/* Signature fixed by the FreeRTOS kernel (non-const name). */
+extern "C" void vApplicationStackOverflowHook(TaskHandle_t task, char* name)  // NOLINT(readability-non-const-parameter)
 {
     (void)task;
     (void)name;

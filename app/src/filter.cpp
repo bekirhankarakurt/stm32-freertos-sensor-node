@@ -45,7 +45,17 @@ std::int32_t Median3::push(std::int32_t value)
     return (lo > upper) ? lo : upper;
 }
 
-Ema::Ema(std::uint8_t shift) : shift_((shift == 0U) ? 1U : ((shift > 15U) ? 15U : shift)) {}
+namespace {
+std::uint8_t clamp_shift(std::uint8_t shift)
+{
+    if (shift == 0U) {
+        return 1U;
+    }
+    return (shift > 15U) ? static_cast<std::uint8_t>(15U) : shift;
+}
+}  // namespace
+
+Ema::Ema(std::uint8_t shift) : shift_(clamp_shift(shift)) {}
 
 std::int32_t Ema::push(std::int32_t value)
 {

@@ -6,12 +6,13 @@
 
 #include "stm32f4xx.h"
 
-extern uint32_t _sidata;
-extern uint32_t _sdata;
-extern uint32_t _edata;
-extern uint32_t _sbss;
-extern uint32_t _ebss;
-extern uint32_t _estack;
+/* Linker-script symbols; only their addresses are meaningful. */
+extern uint32_t _sidata[];
+extern uint32_t _sdata[];
+extern uint32_t _edata[];
+extern uint32_t _sbss[];
+extern uint32_t _ebss[];
+extern uint32_t _estack[];
 
 int main(void);
 
@@ -41,7 +42,7 @@ typedef void (*vector_t)(void);
 
 /** Cortex-M4 core vectors followed by the 85 STM32F401 interrupt vectors. */
 __attribute__((section(".isr_vector"), used)) const vector_t g_vector_table[16 + 85] = {
-    (vector_t)(uintptr_t)&_estack,
+    (vector_t)(uintptr_t)_estack,
     Reset_Handler,
     NMI_Handler,
     HardFault_Handler,
@@ -148,23 +149,26 @@ void Reset_Handler(void)
     __DSB();
     __ISB();
 
-    const uint32_t *src = &_sidata;
-    for (uint32_t *dst = &_sdata; dst < &_edata; ++dst) {
-        *dst = *src;
-        ++src;
+    /* Sizes from address differences: the symbols are distinct objects to the compiler. */
+    const uintptr_t data_words = ((uintptr_t)_edata - (uintptr_t)_sdata) / sizeof(uint32_t);
+    for (uintptr_t i = 0U; i < data_words; ++i) {
+        _sdata[i] = _sidata[i];
     }
-    for (uint32_t *dst = &_sbss; dst < &_ebss; ++dst) {
-        *dst = 0U;
+    const uintptr_t bss_words = ((uintptr_t)_ebss - (uintptr_t)_sbss) / sizeof(uint32_t);
+    for (uintptr_t i = 0U; i < bss_words; ++i) {
+        _sbss[i] = 0U;
     }
     /* Works whether started by the bootloader or directly by a debugger. */
     SCB->VTOR = (uint32_t)(uintptr_t)g_vector_table;
     __DSB();
     /* Static constructors (no C library start files are linked). */
-    for (init_fn_t *fn = __preinit_array_start; fn < __preinit_array_end; ++fn) {
-        (*fn)();
+    const uintptr_t preinit = ((uintptr_t)__preinit_array_end - (uintptr_t)__preinit_array_start) / sizeof(init_fn_t);
+    for (uintptr_t i = 0U; i < preinit; ++i) {
+        __preinit_array_start[i]();
     }
-    for (init_fn_t *fn = __init_array_start; fn < __init_array_end; ++fn) {
-        (*fn)();
+    const uintptr_t init = ((uintptr_t)__init_array_end - (uintptr_t)__init_array_start) / sizeof(init_fn_t);
+    for (uintptr_t i = 0U; i < init; ++i) {
+        __init_array_start[i]();
     }
     (void)main();
     NVIC_SystemReset();

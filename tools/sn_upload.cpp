@@ -35,6 +35,14 @@ bool read_file(const std::string& path, std::vector<std::uint8_t>& out)
     return true;
 }
 
+char slot_letter(std::uint8_t slot)
+{
+    if (slot == 0U) {
+        return 'A';
+    }
+    return (slot == 1U) ? 'B' : '-';
+}
+
 std::string version_string(std::uint32_t ordinal)
 {
     return std::to_string(ordinal >> 24) + "." + std::to_string((ordinal >> 16) & 0xFFU) + "." +
@@ -92,7 +100,7 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
     std::printf("bootloader v%u.%u  active=%c  valid A:%s B:%s  target slot %c\n", info.bl_major, info.bl_minor,
-                (info.active == 1U) ? 'B' : ((info.active == 0U) ? 'A' : '-'),
+                slot_letter(info.active),
                 ((info.valid_mask & 1U) != 0U) ? version_string(info.version[0]).c_str() : "none",
                 ((info.valid_mask & 2U) != 0U) ? version_string(info.version[1]).c_str() : "none",
                 (info.target == 1U) ? 'B' : 'A');

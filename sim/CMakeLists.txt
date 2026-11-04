@@ -13,5 +13,6 @@ sn_add_node(sn_node_sim sn_freertos_posix)
 
 add_executable(sn_sim main_sim.c board_sim.c)
 target_include_directories(sn_sim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_definitions(sn_sim PRIVATE _POSIX_C_SOURCE=200809L)
 target_link_libraries(sn_sim PRIVATE sn_node_sim)
 sn_target_warnings(sn_sim)

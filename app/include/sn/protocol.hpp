@@ -96,9 +96,9 @@ inline constexpr std::size_t kAckSize = 4U;
 
 /** Encoders return the payload length, or 0 when @p cap is too small. */
 std::size_t encode(const Telemetry& t, std::uint8_t seq, std::uint8_t* out, std::size_t cap);
-/** @copydoc encode(const Telemetry&,std::uint8_t,std::uint8_t*,std::size_t) */
+/** Encode a message; returns the payload length or 0 when @p cap is too small. */
 std::size_t encode(const Health& h, std::uint8_t seq, std::uint8_t* out, std::size_t cap);
-/** @copydoc encode(const Telemetry&,std::uint8_t,std::uint8_t*,std::size_t) */
+/** Encode a message; returns the payload length or 0 when @p cap is too small. */
 std::size_t encode(const Boot& b, std::uint8_t seq, std::uint8_t* out, std::size_t cap);
 /** Encode a VERSION reply. */
 std::size_t encode_version(const Version& v, std::uint8_t seq, std::uint8_t* out, std::size_t cap);
@@ -108,9 +108,9 @@ std::size_t encode_ack(std::uint8_t cmd, std::uint8_t status, std::uint8_t seq, 
 
 /** Decoders return false on type or length mismatch. */
 bool decode(const std::uint8_t* in, std::size_t len, Telemetry& t);
-/** @copydoc decode(const std::uint8_t*,std::size_t,Telemetry&) */
+/** Decode a message; false on type or length mismatch. */
 bool decode(const std::uint8_t* in, std::size_t len, Health& h);
-/** @copydoc decode(const std::uint8_t*,std::size_t,Telemetry&) */
+/** Decode a message; false on type or length mismatch. */
 bool decode(const std::uint8_t* in, std::size_t len, Boot& b);
 /** Decode a VERSION reply. */
 bool decode_version(const std::uint8_t* in, std::size_t len, Version& v);

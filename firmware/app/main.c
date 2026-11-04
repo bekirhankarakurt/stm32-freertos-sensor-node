@@ -2,6 +2,8 @@
  * @file main.c
  * @brief Application entry point on target.
  */
+#include "FreeRTOS.h"
+
 #include "board.h"
 #include "node.h"
 
