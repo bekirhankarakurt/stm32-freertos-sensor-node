@@ -5,6 +5,7 @@ add_library(sn_common STATIC
     src/cobs.c
     src/frame.c
     src/ringbuf.c
+    src/flash_geometry.c
     src/image.c
     src/boot_control.c
     src/update_server.c
