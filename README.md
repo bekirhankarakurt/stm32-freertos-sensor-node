@@ -43,7 +43,7 @@ QEMU does not model the reset flags, hence `reset=unknown`; on the Nucleo it rea
 
 ## 60-second quick start
 
-Requirements: CMake ≥ 3.21 (for presets; the project itself needs ≥ 3.16), Ninja, GCC or Clang, Python 3, `gcc-arm-none-eabi` + `libnewlib-arm-none-eabi`. QEMU is optional.
+Requirements: CMake ≥ 3.21 (for presets; the project itself needs ≥ 3.16), Ninja, GCC or Clang, Python 3, `gcc-arm-none-eabi`, `libnewlib-arm-none-eabi`, `libstdc++-arm-none-eabi-newlib`. QEMU is optional.
 
 ```bash
 cmake --preset host && cmake --build --preset host && ctest --preset host
