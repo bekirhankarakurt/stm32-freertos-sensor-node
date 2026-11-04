@@ -34,7 +34,7 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
           arm-none-eabi-size -B build/firmware/firmware/*.elf
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: firmware
           path: |
@@ -109,7 +109,7 @@ jobs:
           cmake --preset firmware
       - name: Analyze
         run: scripts/static_analysis.sh build/host build/firmware build/static-analysis
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: misra-report
