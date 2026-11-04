@@ -1,0 +1,22 @@
+/* Application linked for slot @SN_SLOT_NAME@ (@SN_SLOT_ADDR@, 128 KiB). */
+MEMORY
+{
+    FLASH  (rx)  : ORIGIN = @SN_SLOT_ADDR@, LENGTH = 128K
+    RAM    (rwx) : ORIGIN = 0x20000000, LENGTH = 96K - 32
+    SHARED (rw)  : ORIGIN = 0x20017FE0, LENGTH = 32
+}
+ENTRY(Reset_Handler)
+_min_stack = 0x800;
+__image_start = ORIGIN(FLASH);
+
+SECTIONS
+{
+    /* 512-byte header area finalised by tools/imgtool.py after linking. */
+    .image_header :
+    {
+        KEEP(*(.image_header))
+        FILL(0xFF);
+        . = 0x200;
+    } > FLASH
+}
+INCLUDE sections.ld.inc
