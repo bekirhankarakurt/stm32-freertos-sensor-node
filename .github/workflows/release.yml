@@ -3,6 +3,11 @@ name: Release
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release from the selected commit (creates tag v<version>)"
+        required: true
 
 permissions:
   contents: write
@@ -29,9 +34,18 @@ jobs:
           for img in sn_app_a.bin sn_app_b.bin; do python3 ../tools/imgtool.py info "$img"; done
           sha256sum * > SHA256SUMS
           cat SHA256SUMS
+      - name: Resolve tag
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "TAG=v${{ inputs.version }}" >> "$GITHUB_ENV"
+            echo "TAG_ARGS=--target $GITHUB_SHA" >> "$GITHUB_ENV"
+          else
+            echo "TAG=$GITHUB_REF_NAME" >> "$GITHUB_ENV"
+            echo "TAG_ARGS=--verify-tag" >> "$GITHUB_ENV"
+          fi
       - name: Extract release notes
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          version="${TAG#v}"
           awk -v v="$version" '
             $0 ~ "^## \\[" v "\\]" { found = 1; next }
             found && /^## \[/ { exit }
@@ -41,4 +55,4 @@ jobs:
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --notes-file notes.md --verify-tag
+        run: gh release create "$TAG" dist/* --title "$TAG" --notes-file notes.md $TAG_ARGS
